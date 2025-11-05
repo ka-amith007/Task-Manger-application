@@ -1,0 +1,896 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React Task Manager</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+      
+      :root{
+        --bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --card: rgba(255, 255, 255, 0.95);
+        --card-hover: rgba(255, 255, 255, 1);
+        --muted: #64748b;
+        --accent: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --accent-hover: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        --text: #1e293b;
+        --border: rgba(226, 232, 240, 0.8);
+        --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        --shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.15);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+        min-height: 100vh;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 3rem;
+        color: white;
+      }
+
+      .header h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .header .subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        font-weight: 300;
+      }
+
+      .card {
+        background: var(--card);
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+      }
+
+      .card:hover {
+        background: var(--card-hover);
+        box-shadow: var(--shadow-hover);
+        transform: translateY(-2px);
+      }
+
+      .form-section {
+        margin-bottom: 2rem;
+      }
+
+      .form-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 200px;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      @media (max-width: 768px) {
+        .form-row {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      label {
+        font-weight: 500;
+        color: var(--text);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      input, textarea, select {
+        padding: 0.875rem 1rem;
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.8);
+        font-family: inherit;
+      }
+
+      input:focus, textarea:focus, select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        background: white;
+      }
+
+      input[type="date"]:invalid {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+      }
+
+      input[type="date"]::after {
+        content: " (Today or later only)";
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+
+      .btn {
+        padding: 0.875rem 1.5rem;
+        border-radius: 12px;
+        border: none;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: inherit;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+      }
+
+      .btn:hover::before {
+        left: 100%;
+      }
+
+      .btn.primary {
+        background: var(--accent);
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn.primary:hover {
+        background: var(--accent-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn.secondary {
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--text);
+        border: 2px solid var(--border);
+      }
+
+      .btn.secondary:hover {
+        background: white;
+        border-color: #667eea;
+        color: #667eea;
+        transform: translateY(-1px);
+      }
+
+      .btn.danger {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        color: white;
+      }
+
+      .btn.danger:hover {
+        background: linear-gradient(135deg, #ff5252 0%, #d63031 100%);
+        transform: translateY(-1px);
+      }
+
+      .btn.success {
+        background: linear-gradient(135deg, #26de81 0%, #20bf6b 100%);
+        color: white;
+      }
+
+      .btn.success:hover {
+        background: linear-gradient(135deg, #2dd4bf 0%, #059669 100%);
+        transform: translateY(-1px);
+      }
+
+      .filters {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        margin: 2rem 0;
+        flex-wrap: wrap;
+      }
+
+      .filter-group {
+        background: var(--card);
+        padding: 1rem;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: all 0.3s ease;
+      }
+
+      .filter-group:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-hover);
+      }
+
+      .task-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+      }
+
+      .task-card {
+        background: var(--card);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .task-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--priority-color, #667eea);
+        transition: width 0.3s ease;
+      }
+
+      .task-card:hover::before {
+        width: 8px;
+      }
+
+      .task-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-hover);
+      }
+
+      .task-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 1rem;
+      }
+
+      .task-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text);
+        margin: 0;
+        line-height: 1.3;
+      }
+
+      .task-description {
+        color: var(--muted);
+        margin: 0.75rem 0;
+        line-height: 1.5;
+      }
+
+      .task-meta {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        margin: 1rem 0;
+        flex-wrap: wrap;
+      }
+
+      .priority-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        color: white;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .prio-low {
+        background: linear-gradient(135deg, #26de81 0%, #20bf6b 100%);
+      }
+
+      .prio-med {
+        background: linear-gradient(135deg, #ffa726 0%, #ff9800 100%);
+      }
+
+      .prio-high {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+      }
+
+      .task-due {
+        color: var(--muted);
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .task-due.overdue {
+        color: #ef4444;
+        font-weight: 600;
+        background: rgba(239, 68, 68, 0.1);
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        border-left: 3px solid #ef4444;
+      }
+
+      .task-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+      }
+
+      .task-actions .btn {
+        flex: 1;
+        min-width: 80px;
+        font-size: 0.875rem;
+        padding: 0.625rem 1rem;
+      }
+
+      .completed .task-title {
+        opacity: 0.6;
+        text-decoration: line-through;
+      }
+
+      .completed .task-card {
+        opacity: 0.8;
+      }
+
+      .error {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        background: rgba(239, 68, 68, 0.1);
+        border-radius: 8px;
+        border-left: 4px solid #ef4444;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .no-tasks {
+        text-align: center;
+        color: white;
+        font-size: 1.25rem;
+        margin: 3rem 0;
+        opacity: 0.8;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .task-card {
+        animation: slideIn 0.3s ease-out;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 1rem;
+        }
+        
+        .header h1 {
+          font-size: 2rem;
+        }
+        
+        .task-list {
+          grid-template-columns: 1fr;
+        }
+        
+        .filters {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        
+        .task-actions {
+          flex-direction: column;
+        }
+        
+        .task-actions .btn {
+          flex: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="text/babel">
+      const { useState, useEffect } = React;
+      
+      function TaskForm({ onAdd, editingTask, onUpdate, onCancel }) {
+        const empty = { title:'', description:'', priority:'Low', dueDate:'' };
+        const [form, setForm] = useState(empty);
+        const [error, setError] = useState('');
+
+        useEffect(()=>{
+          if(editingTask){
+            setForm({
+              title: editingTask.title || '',
+              description: editingTask.description || '',
+              priority: editingTask.priority || 'Low',
+              dueDate: editingTask.dueDate || ''
+            });
+          }else{
+            setForm(empty);
+          }
+        },[editingTask]);
+
+        const handleChange = e => {
+          const { name, value } = e.target;
+          setForm(f => ({...f, [name]: value}));
+        };
+
+        const handleSubmit = e => {
+          e.preventDefault();
+          if(!form.title.trim()){
+            setError('Title is required');
+            return;
+          }
+          
+          // Validate due date is not in the past
+          if(form.dueDate && new Date(form.dueDate) < new Date().setHours(0,0,0,0)){
+            setError('Due date cannot be in the past. Please select today or a future date.');
+            return;
+          }
+          
+          setError('');
+          if(editingTask){
+            onUpdate(editingTask.id, form);
+          }else{
+            onAdd(form);
+            setForm(empty);
+          }
+        };
+
+        return (
+          <form onSubmit={handleSubmit}>
+            <div className="form-title">
+              {editingTask ? '✏️ Edit Task' : '➕ Add New Task'}
+              {editingTask && <button type="button" className="btn secondary" onClick={onCancel}>Cancel</button>}
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label>Task Title *</label>
+                <input 
+                  name="title" 
+                  value={form.title} 
+                  onChange={handleChange} 
+                  placeholder="Enter task title..."
+                />
+              </div>
+              <div className="form-group">
+                <label>Priority Level</label>
+                <select name="priority" value={form.priority} onChange={handleChange}>
+                  <option>Low</option>
+                  <option>Medium</option>
+                  <option>High</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Description</label>
+              <textarea 
+                name="description" 
+                value={form.description} 
+                onChange={handleChange} 
+                placeholder="Add task description (optional)..."
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Due Date</label>
+              <input 
+                type="date" 
+                name="dueDate" 
+                value={form.dueDate} 
+                onChange={handleChange}
+                min={new Date().toISOString().split('T')[0]}
+                title="Please select today or a future date"
+              />
+              <div style={{fontSize:'0.8rem',color:'var(--muted)',marginTop:'0.25rem'}}>
+                📅 Select today ({new Date().toLocaleDateString()}) or a future date only
+              </div>
+            </div>
+
+            {error && <div className="error">⚠️ {error}</div>}
+
+            <div style={{marginTop:'1.5rem',display:'flex',gap:'1rem'}}>
+              <button className="btn primary" type="submit">
+                {editingTask ? '💾 Save Changes' : '✨ Create Task'}
+              </button>
+            </div>
+          </form>
+        );
+      }
+
+      function TaskCard({ task, onDelete, onToggle, onEdit, onUpdate }) {
+        const [isEditing, setIsEditing] = useState(false);
+
+        const getPrioClass = (p) => {
+          if(p === 'Low') return 'prio-low';
+          if(p === 'Medium') return 'prio-med';
+          return 'prio-high';
+        };
+
+        const handleEdit = () => {
+          setIsEditing(true);
+        };
+
+        const handleSave = (id, updates) => {
+          onUpdate(task.id, updates);
+          setIsEditing(false);
+        };
+
+        return (
+          <div className="task-card" style={{'--priority-color': getPrioClass(task.priority) === 'prio-low' ? '#26de81' : getPrioClass(task.priority) === 'prio-med' ? '#ffa726' : '#ff6b6b'}}>
+            {isEditing ? (
+              <TaskForm 
+                editingTask={task} 
+                onUpdate={(id, data) => handleSave(id, data)} 
+                onCancel={() => setIsEditing(false)} 
+              />
+            ) : (
+              <>
+                <div className="task-header">
+                  <h4 className={`task-title ${task.completed ? 'completed' : ''}`}>{task.title}</h4>
+                  {task.completed && <span style={{fontSize:'1.5rem'}}>✅</span>}
+                </div>
+
+                {task.description && (
+                  <div className="task-description">{task.description}</div>
+                )}
+
+                <div className="task-meta">
+                  <div className={`priority-badge ${getPrioClass(task.priority)}`}>
+                    {task.priority === 'High' ? '🔥' : task.priority === 'Medium' ? '⚡' : '🌱'} {task.priority}
+                  </div>
+                  {task.dueDate && (
+                    <div className={`task-due ${
+                      new Date(task.dueDate) < new Date().setHours(0,0,0,0) && !task.completed 
+                        ? 'overdue' : ''
+                    }`}>
+                      {new Date(task.dueDate) < new Date().setHours(0,0,0,0) && !task.completed 
+                        ? '⚠️ OVERDUE: ' : '📅 Due: '}
+                      {new Date(task.dueDate).toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
+
+                <div className="task-actions">
+                  <button 
+                    className={`btn ${task.completed ? 'secondary' : 'success'}`} 
+                    onClick={() => onToggle(task.id)}
+                  >
+                    {task.completed ? '↩️ Pending' : '✅ Complete'}
+                  </button>
+                  <button className="btn secondary" onClick={handleEdit}>
+                    ✏️ Edit
+                  </button>
+                  <button className="btn danger" onClick={() => { 
+                    if(window.confirm('🗑️ Delete this task forever?')) onDelete(task.id) 
+                  }}>
+                    🗑️ Delete
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        );
+      }
+
+      function TaskList({ tasks, onDelete, onToggle, onEdit, onUpdate }) {
+        if(!tasks || tasks.length === 0) {
+          return (
+            <div className="no-tasks">
+              <div style={{fontSize:'4rem',marginBottom:'1rem'}}>📝</div>
+              <div>No tasks to show</div>
+              <div style={{fontSize:'1rem',opacity:0.7,marginTop:'0.5rem'}}>
+                Create your first task above to get started!
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="task-list">
+            {tasks.map(t => (
+              <TaskCard 
+                key={t.id} 
+                task={t} 
+                onDelete={onDelete} 
+                onToggle={onToggle} 
+                onEdit={onEdit} 
+                onUpdate={onUpdate} 
+              />
+            ))}
+          </div>
+        );
+      }
+
+      function App() {
+        const [tasks, setTasks] = useState(() => {
+          try{
+            const raw = localStorage.getItem('tasks');
+            return raw ? JSON.parse(raw) : [];
+          }catch(e){
+            return [];
+          }
+        });
+
+        const [editingTask, setEditingTask] = useState(null);
+        const [statusFilter, setStatusFilter] = useState('all');
+        const [priorityFilter, setPriorityFilter] = useState('all');
+
+        useEffect(()=>{
+          localStorage.setItem('tasks', JSON.stringify(tasks));
+        },[tasks]);
+
+        const addTask = (task) => {
+          setTasks(prev => [{...task, id: Date.now().toString(), completed:false}, ...prev]);
+        };
+
+        const updateTask = (id, updates) => {
+          setTasks(prev => prev.map(t => t.id === id ? {...t, ...updates} : t));
+          setEditingTask(null);
+        };
+
+        const deleteTask = (id) => {
+          setTasks(prev => prev.filter(t => t.id !== id));
+        };
+
+        const toggleComplete = (id) => {
+          setTasks(prev => prev.map(t => t.id === id ? {...t, completed: !t.completed} : t));
+        };
+
+        const startEdit = (task) => setEditingTask(task);
+
+        const clearFilters = () => { 
+          setStatusFilter('all'); 
+          setPriorityFilter('all'); 
+        };
+
+        // Data Export/Import Functions
+        const exportToJSON = () => {
+          const dataStr = JSON.stringify(tasks, null, 2);
+          const dataBlob = new Blob([dataStr], {type: 'application/json'});
+          const url = URL.createObjectURL(dataBlob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `tasks-backup-${new Date().toISOString().split('T')[0]}.json`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        };
+
+        const exportToCSV = () => {
+          const headers = ['Title', 'Description', 'Priority', 'Due Date', 'Status', 'Created'];
+          const csvContent = [
+            headers.join(','),
+            ...tasks.map(t => [
+              `"${t.title}"`,
+              `"${t.description || ''}"`,
+              t.priority,
+              t.dueDate || '',
+              t.completed ? 'Completed' : 'Pending',
+              new Date(parseInt(t.id)).toLocaleDateString()
+            ].join(','))
+          ].join('\n');
+          
+          const dataBlob = new Blob([csvContent], {type: 'text/csv'});
+          const url = URL.createObjectURL(dataBlob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `tasks-export-${new Date().toISOString().split('T')[0]}.csv`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        };
+
+        const importFromJSON = (event) => {
+          const file = event.target.files[0];
+          if (!file) return;
+          
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              const importedTasks = JSON.parse(e.target.result);
+              if (Array.isArray(importedTasks)) {
+                const confirmMessage = `Import ${importedTasks.length} tasks? This will replace your current ${tasks.length} tasks.`;
+                if (window.confirm(confirmMessage)) {
+                  setTasks(importedTasks);
+                }
+              } else {
+                alert('Invalid file format. Please select a valid JSON backup file.');
+              }
+            } catch (error) {
+              alert('Error reading file. Please make sure it\'s a valid JSON backup.');
+            }
+          };
+          reader.readAsText(file);
+          event.target.value = ''; // Reset input
+        };
+
+        const getStorageInfo = () => {
+          const dataSize = new Blob([JSON.stringify(tasks)]).size;
+          const storageUsed = JSON.stringify(localStorage).length;
+          return { dataSize, storageUsed, taskCount: tasks.length };
+        };
+
+        const filtered = tasks.filter(t => {
+          if(statusFilter === 'pending' && t.completed) return false;
+          if(statusFilter === 'completed' && !t.completed) return false;
+          if(priorityFilter !== 'all' && t.priority !== priorityFilter) return false;
+          return true;
+        });
+
+        return (
+          <div className="container">
+            <div className="header">
+              <h1>✨ Task Manager</h1>
+              <div className="subtitle">Beautiful & Modern Task Management</div>
+            </div>
+
+            <div className="card form-section">
+              <TaskForm 
+                onAdd={addTask} 
+                editingTask={editingTask} 
+                onUpdate={updateTask} 
+                onCancel={() => setEditingTask(null)} 
+              />
+            </div>
+
+            <div className="filters">
+              <div className="filter-group">
+                <label>📋 Status:</label>
+                <select 
+                  value={statusFilter} 
+                  onChange={e => setStatusFilter(e.target.value)}
+                >
+                  <option value="all">All Tasks</option>
+                  <option value="pending">⏳ Pending</option>
+                  <option value="completed">✅ Completed</option>
+                </select>
+              </div>
+
+              <div className="filter-group">
+                <label>🏷️ Priority:</label>
+                <select 
+                  value={priorityFilter} 
+                  onChange={e => setPriorityFilter(e.target.value)}
+                >
+                  <option value="all">All Priorities</option>
+                  <option value="Low">🌱 Low</option>
+                  <option value="Medium">⚡ Medium</option>
+                  <option value="High">🔥 High</option>
+                </select>
+              </div>
+
+              <div className="filter-group">
+                <button className="btn secondary" onClick={clearFilters}>
+                  🔄 Clear Filters
+                </button>
+              </div>
+              
+              <div className="filter-group">
+                <div style={{color:'white',fontWeight:500}}>
+                  📊 {filtered.length} of {tasks.length} tasks
+                </div>
+              </div>
+            </div>
+
+            <div className="filters">
+              <div className="filter-group">
+                <button className="btn primary" onClick={exportToJSON}>
+                  💾 Export JSON
+                </button>
+              </div>
+              
+              <div className="filter-group">
+                <button className="btn primary" onClick={exportToCSV}>
+                  📊 Export CSV
+                </button>
+              </div>
+
+              <div className="filter-group">
+                <input 
+                  type="file" 
+                  accept=".json" 
+                  onChange={importFromJSON} 
+                  style={{display:'none'}} 
+                  id="import-file"
+                />
+                <button 
+                  className="btn secondary" 
+                  onClick={() => document.getElementById('import-file').click()}
+                >
+                  📂 Import JSON
+                </button>
+              </div>
+
+              <div className="filter-group">
+                <button 
+                  className="btn secondary" 
+                  onClick={() => {
+                    const info = getStorageInfo();
+                    alert(`📊 Storage Info:\n\n• ${info.taskCount} tasks stored\n• Data size: ${(info.dataSize/1024).toFixed(2)} KB\n• Storage: Browser localStorage\n• Location: This browser only\n\n💡 Tip: Use Export to backup your data!`);
+                  }}
+                >
+                  📊 Storage Info
+                </button>
+              </div>
+            </div>
+
+            <TaskList 
+              tasks={filtered} 
+              onDelete={deleteTask} 
+              onToggle={toggleComplete} 
+              onEdit={startEdit} 
+              onUpdate={updateTask} 
+            />
+          </div>
+        );
+      }
+
+      // Render the app
+      ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+  </body>
+</html>
